@@ -29,10 +29,21 @@ exec > >(tee "$GAMEDIR/log.txt") 2>&1
 
 cd $GAMEDIR
 
-LAUNCH_GAME="SpectralSlash.exe"
+GAME_FILE="SpectralSlash.exe"
+LAUNCH_FILE="SpectralSlash"
+
+if [ -f "$GAME_FILE" ]; then
+  pauselua_file="Engine/PauseMenu.lua"
+  ./bin/7za x "$GAME_FILE" "$pauselua_file"
+  sed -i 's/love\.graphics\.newFont("Fonts\/monogram\.ttf", 16)/monogram/' "$pauselua_file"
+  ./bin/7za u -mx0 -aoa "$GAME_FILE" "$pauselua_file"
+  rm -rf "Engine"
+  
+  mv "$GAME_FILE" "$LAUNCH_FILE"
+fi
 
 $GPTOKEYB "love" &
-./bin/love "$LAUNCH_GAME"
+./bin/love "$LAUNCH_FILE"
 
 $ESUDO kill -9 $(pidof gptokeyb)
 $ESUDO systemctl restart oga_events &
